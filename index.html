@@ -2,175 +2,254 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hub-Zero</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#07130c" />
+  <title>Hub Zero</title>
 
   <style>
+    /* =========================================================
+       HUB ZERO — Deep Space (Green Theme)
+       EDITING GUIDE:
+       - Search for:  EDIT ME
+       - Replace the example card's data-src + title + image
+       ========================================================= */
+
     :root{
-      --bg0:#04050b;
-      --bg1:#070a1a;
-      --glass: rgba(255,255,255,.06);
-      --glass2: rgba(0,0,0,.45);
-      --border: rgba(160,210,255,.18);
-      --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.70);
-      --neon: #4cc9f0;
-      --neon2:#a855f7;
-      --neon3:#22c55e;
-      --warn:#f59e0b;
-      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --bg0:#02060a;
+      --bg1:#040b10;
+      --bg2:#061218;
+
+      --text: rgba(255,255,255,.90);
+      --muted: rgba(255,255,255,.62);
+      --faint: rgba(255,255,255,.12);
+
+      --g0:#13f287;   /* primary green */
+      --g1:#00d26a;   /* secondary */
+      --g2:#22ffb0;   /* glow */
+
+      --card: rgba(0,0,0,.45);
+      --card2: rgba(255,255,255,.04);
+
       --radius: 20px;
+      --shadow: 0 22px 70px rgba(0,0,0,.6);
+      --inner: 0 0 0 1px rgba(255,255,255,.06) inset;
+
+      --ring: 0 0 0 3px rgba(19,242,135,.22);
+      --ring2: 0 0 0 2px rgba(19,242,135,.12);
+
+      --ease: cubic-bezier(.2,.9,.2,1);
     }
 
-    /* Base */
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+      #stars, .dust, .shooting{ display:none !important; }
+    }
+
     *{ box-sizing:border-box; margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    html,body{ height:100%; }
+    html, body{ height:100%; }
     body{
       color: var(--text);
-      background: radial-gradient(1200px 900px at 10% 0%, #0b1450 0%, transparent 60%),
-                  radial-gradient(900px 700px at 90% 20%, #2a0d3f 0%, transparent 60%),
-                  radial-gradient(900px 700px at 50% 110%, #041b2d 0%, transparent 60%),
-                  linear-gradient(180deg, var(--bg1), var(--bg0));
+      background:
+        radial-gradient(1200px 800px at 20% 5%, rgba(19,242,135,.10) 0%, transparent 55%),
+        radial-gradient(900px 700px at 85% 15%, rgba(19,242,135,.06) 0%, transparent 58%),
+        radial-gradient(900px 700px at 50% 115%, rgba(19,242,135,.05) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg2), var(--bg0));
       overflow-x:hidden;
     }
 
-    /* Motion preference */
-    @media (prefers-reduced-motion: reduce){
-      *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
-      canvas{ display:none !important; }
-    }
-
-    /* Star canvas */
-    #starfield{
-      position: fixed; inset:0;
+    /* Deep-space layers */
+    #stars{
+      position:fixed; inset:0;
       width:100%; height:100%;
-      z-index:-3;
+      z-index:-4;
+    }
+    .vignette{
+      position:fixed; inset:0;
+      z-index:-3; pointer-events:none;
+      background:
+        radial-gradient(circle at 50% 0%, transparent 55%, rgba(0,0,0,.45) 100%),
+        radial-gradient(circle at 0% 60%, rgba(0,0,0,.35), transparent 45%),
+        radial-gradient(circle at 100% 60%, rgba(0,0,0,.35), transparent 45%);
     }
 
-    /* Soft nebula blobs */
-    .nebula{
-      position: fixed; inset:0;
-      z-index:-2;
-      pointer-events:none;
-      filter: blur(40px) saturate(140%);
+    /* Subtle drifting “space dust” */
+    .dust{
+      position:fixed; inset:0;
+      z-index:-2; pointer-events:none;
       opacity:.55;
+      filter: blur(0.2px);
     }
-    .blob{
-      position:absolute; border-radius:999px;
-      mix-blend-mode: screen;
-      animation: floaty 10s ease-in-out infinite;
+    .dust:before{
+      content:"";
+      position:absolute; inset:-50%;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,.08) 0 1px, transparent 2px),
+        radial-gradient(circle at 40% 80%, rgba(255,255,255,.06) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 40%, rgba(255,255,255,.07) 0 1px, transparent 2px),
+        radial-gradient(circle at 85% 70%, rgba(255,255,255,.05) 0 1px, transparent 2px);
+      animation: drift 40s linear infinite;
     }
-    .blob.b1{ width:540px; height:540px; left:-120px; top:80px; background: radial-gradient(circle at 30% 30%, rgba(76,201,240,.50), transparent 65%); }
-    .blob.b2{ width:520px; height:520px; right:-160px; top:140px; background: radial-gradient(circle at 60% 40%, rgba(168,85,247,.45), transparent 65%); animation-duration: 13s; }
-    .blob.b3{ width:520px; height:520px; left:30%; bottom:-220px; background: radial-gradient(circle at 50% 30%, rgba(34,197,94,.22), transparent 65%); animation-duration: 16s; }
+    @keyframes drift{
+      from{ transform: translate3d(0,0,0) rotate(0deg); }
+      to{ transform: translate3d(220px,160px,0) rotate(8deg); }
+    }
 
-    @keyframes floaty{
-      0%,100%{ transform: translate3d(0,0,0) scale(1); }
-      50%{ transform: translate3d(0,-18px,0) scale(1.03); }
+    /* Shooting star layer (pure CSS, occasional) */
+    .shooting{
+      position:fixed; inset:0;
+      pointer-events:none;
+      z-index:-1;
+      overflow:hidden;
+    }
+    .shooting span{
+      position:absolute;
+      top: -20%;
+      left: -30%;
+      width: 220px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(19,242,135,0), rgba(19,242,135,.8), rgba(19,242,135,0));
+      filter: drop-shadow(0 0 12px rgba(19,242,135,.35));
+      transform: rotate(18deg);
+      opacity:0;
+      animation: shoot 7s var(--ease) infinite;
+    }
+    .shooting span:nth-child(2){ animation-delay: 2.6s; top:-10%; left:-35%; width: 260px; }
+    .shooting span:nth-child(3){ animation-delay: 4.8s; top:-25%; left:-40%; width: 300px; }
+
+    @keyframes shoot{
+      0%{ transform: translate3d(0,0,0) rotate(18deg); opacity:0; }
+      8%{ opacity:1; }
+      22%{ opacity:0; }
+      100%{ transform: translate3d(180vw, 100vh, 0) rotate(18deg); opacity:0; }
     }
 
-    /* Layout container */
+    /* Layout */
     .wrap{
-      max-width: 1100px;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 22px 16px 80px;
+      padding: 24px 16px 88px;
     }
 
-    /* Top header */
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      padding: 14px 14px;
-      border: 1px solid var(--border);
+    /* Header */
+    .hero{
+      padding: 26px 20px 18px;
       border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.35));
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.35));
+      border: 1px solid rgba(255,255,255,.10);
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
-      position: sticky;
-      top: 12px;
-      z-index: 50;
+      position: relative;
+      overflow:hidden;
+    }
+    .hero:before{
+      content:"";
+      position:absolute; inset:-50%;
+      background: radial-gradient(circle at 30% 30%, rgba(19,242,135,.10), transparent 55%);
+      opacity:.8;
+      pointer-events:none;
+      transform: translate3d(0,0,0);
+    }
+
+    .heroTop{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 14px;
+      flex-wrap:wrap;
     }
 
     .brand{
-      display:flex; align-items:center; gap:12px;
-      min-width: 200px;
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      min-width: 240px;
     }
-    .logo{
-      width: 38px; height: 38px; border-radius: 12px;
-      background: radial-gradient(circle at 30% 30%, rgba(76,201,240,.95), rgba(168,85,247,.75) 55%, rgba(0,0,0,.2) 100%);
-      box-shadow: 0 0 28px rgba(76,201,240,.35);
-      border:1px solid rgba(255,255,255,.12);
+    .mark{
+      width: 44px; height: 44px;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(34,255,176,.9), rgba(0,0,0,.15) 65%),
+        radial-gradient(circle at 75% 70%, rgba(19,242,135,.55), transparent 60%);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 0 26px rgba(19,242,135,.18);
       position:relative;
       overflow:hidden;
     }
-    .logo:after{
+    .mark:after{
       content:"";
-      position:absolute; inset:-40%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+      position:absolute; inset:-60%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
       transform: rotate(25deg);
-      animation: sheen 2.6s ease-in-out infinite;
-      opacity:.7;
+      animation: sheen 2.8s var(--ease) infinite;
+      opacity:.75;
     }
     @keyframes sheen{
-      0%{ transform: translateX(-40%) rotate(25deg); }
-      55%{ transform: translateX(60%) rotate(25deg); }
+      0%{ transform: translateX(-45%) rotate(25deg); }
+      55%{ transform: translateX(40%) rotate(25deg); }
       100%{ transform: translateX(120%) rotate(25deg); }
     }
 
-    .title{
+    .heroTitle{
       line-height:1.0;
-      font-weight:900;
-      letter-spacing:.5px;
-      font-size: 18px;
     }
-    .title .grad{
-      background: linear-gradient(90deg, var(--neon), var(--neon2), #ffffff);
+    .heroTitle h1{
+      font-size: clamp(30px, 4vw, 46px);
+      letter-spacing: .6px;
+      font-weight: 950;
+      text-transform: none;
+      background: linear-gradient(90deg, rgba(255,255,255,.95), rgba(19,242,135,.95));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      text-shadow: 0 0 30px rgba(76,201,240,.25);
+      text-shadow: 0 0 34px rgba(19,242,135,.14);
     }
-    .subtitle{
-      font-size: 12px;
+    .heroTitle .byline{
+      margin-top: 6px;
+      font-size: 14px;
       color: var(--muted);
-      margin-top: 3px;
+    }
+    .heroTitle .byline b{
+      color: rgba(255,255,255,.88);
+      font-weight: 800;
     }
 
-    /* Nav buttons */
+    /* Nav */
     .nav{
       display:flex;
+      gap: 10px;
       flex-wrap:wrap;
-      gap:10px;
-      justify-content:center;
-      flex:1;
+      justify-content:flex-end;
     }
     .btn{
       position:relative;
-      border: 1px solid rgba(76,201,240,.35);
-      background: rgba(0,0,0,.25);
-      color: rgba(240,250,255,.92);
       padding: 10px 14px;
       border-radius: 999px;
       cursor:pointer;
       user-select:none;
-      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+      border: 1px solid rgba(19,242,135,.22);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.86);
+      transition: transform .16s var(--ease), box-shadow .16s var(--ease), border-color .16s var(--ease), background .16s var(--ease);
       overflow:hidden;
-      min-width: 108px;
+      min-width: 112px;
       text-align:center;
       backdrop-filter: blur(6px);
     }
     .btn:hover{
       transform: translateY(-1px);
-      box-shadow: 0 0 26px rgba(76,201,240,.18);
-      border-color: rgba(76,201,240,.7);
-      background: rgba(76,201,240,.10);
+      border-color: rgba(19,242,135,.55);
+      box-shadow: 0 0 30px rgba(19,242,135,.16);
+      background: rgba(19,242,135,.07);
+    }
+    .btn:focus-visible{
+      outline:none;
+      box-shadow: var(--ring), 0 0 35px rgba(19,242,135,.16);
     }
     .btn.active{
-      border-color: rgba(168,85,247,.75);
-      background: rgba(168,85,247,.14);
-      box-shadow: 0 0 28px rgba(168,85,247,.16);
+      border-color: rgba(34,255,176,.65);
+      background: rgba(19,242,135,.10);
+      box-shadow: 0 0 42px rgba(19,242,135,.18);
     }
 
     /* Ripple */
@@ -179,58 +258,59 @@
       border-radius:999px;
       transform: translate(-50%,-50%);
       pointer-events:none;
-      background: radial-gradient(circle, rgba(76,201,240,.55), transparent 60%);
-      width: 12px; height: 12px;
-      animation: rip .55s ease-out forwards;
-      filter: blur(.2px);
+      width: 10px; height: 10px;
+      background: radial-gradient(circle, rgba(34,255,176,.55), rgba(19,242,135,.22), transparent 65%);
+      animation: rip .6s var(--ease) forwards;
+      filter: blur(.1px);
+      opacity:.9;
     }
     @keyframes rip{
-      to{ width: 340px; height: 340px; opacity: 0; }
+      to{ width: 360px; height: 360px; opacity: 0; }
     }
 
-    /* Sections + transitions */
-    .section{
-      margin-top: 22px;
-      border: 1px solid rgba(255,255,255,.10);
+    /* Main panel */
+    .panel{
+      margin-top: 16px;
       border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.35));
+      border: 1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.40));
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
       overflow:hidden;
     }
 
-    .sectionHeader{
-      padding: 18px 18px 0;
+    .panelHead{
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
       gap: 12px;
+      padding: 18px 18px 0;
     }
-    .sectionHeader h2{
+    .panelHead h2{
       font-size: 18px;
-      letter-spacing:.2px;
+      font-weight: 900;
+      letter-spacing: .2px;
     }
-    .hint{
+    .tip{
       font-size: 12px;
       color: var(--muted);
-      opacity:.95;
     }
 
+    /* Pages */
     .page{
       display:none;
       padding: 18px;
-      animation: pageIn .45s ease;
+      animation: pageIn .42s var(--ease);
       transform-origin: top center;
     }
     .page.active{ display:block; }
-
     @keyframes pageIn{
-      from{ opacity:0; transform: translateY(10px) scale(.99); }
+      from{ opacity:0; transform: translateY(10px) scale(.992); }
       to{ opacity:1; transform: translateY(0) scale(1); }
     }
 
-    /* Editable home blocks */
-    .blocks{
+    /* Blocks */
+    .grid12{
       display:grid;
       grid-template-columns: repeat(12, 1fr);
       gap: 14px;
@@ -241,488 +321,544 @@
       padding: 16px;
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.30);
-      box-shadow: 0 0 0 1px rgba(76,201,240,.03) inset;
+      background: rgba(0,0,0,.32);
+      box-shadow: var(--inner);
     }
-    .block strong{ color: rgba(240,250,255,.95); }
-    .block p{ color: var(--muted); margin-top: 8px; line-height: 1.5; }
-    .block.small{ grid-column: span 12; }
-    @media(min-width: 900px){
-      .block.small{ grid-column: span 6; }
-    }
+    .block p{ margin-top: 10px; color: var(--muted); line-height: 1.55; }
+    .block strong{ color: rgba(255,255,255,.90); }
     .pill{
-      display:inline-flex; gap:8px; align-items:center;
+      display:inline-flex;
+      gap: 8px;
+      align-items:center;
       padding: 6px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(76,201,240,.22);
-      background: rgba(76,201,240,.08);
+      border: 1px solid rgba(19,242,135,.22);
+      background: rgba(19,242,135,.06);
+      color: rgba(255,255,255,.86);
       font-size: 12px;
-      color: rgba(240,250,255,.88);
+    }
+    @media(min-width: 920px){
+      .block.half{ grid-column: span 6; }
     }
 
-    /* Cards */
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
+    /* Example cards (one per section) */
+    .cardRow{
       margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
     }
     .card{
       position:relative;
       border-radius: 18px;
       overflow:hidden;
-      border: 1px solid rgba(76,201,240,.22);
-      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(19,242,135,.20);
+      background: rgba(0,0,0,.32);
       cursor:pointer;
-      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      transition: transform .14s var(--ease), box-shadow .14s var(--ease), border-color .14s var(--ease);
       transform: perspective(900px) translateZ(0);
       will-change: transform;
+      box-shadow: var(--inner);
     }
     .card:hover{
-      border-color: rgba(76,201,240,.65);
-      box-shadow: 0 0 40px rgba(76,201,240,.18);
+      border-color: rgba(19,242,135,.58);
+      box-shadow: 0 0 55px rgba(19,242,135,.12), var(--inner);
     }
-
     .thumb{
-      height: 130px;
+      height: 170px;
       background:
-        radial-gradient(circle at 30% 30%, rgba(76,201,240,.45), transparent 60%),
-        radial-gradient(circle at 70% 20%, rgba(168,85,247,.35), transparent 55%),
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.55));
-      border-bottom: 1px solid rgba(255,255,255,.10);
+        radial-gradient(circle at 25% 30%, rgba(19,242,135,.18), transparent 55%),
+        radial-gradient(circle at 70% 25%, rgba(34,255,176,.10), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.60));
+      border-bottom: 1px solid rgba(255,255,255,.08);
       position:relative;
       overflow:hidden;
     }
     .thumb img{
       width:100%; height:100%; object-fit:cover; display:block;
       opacity:.92;
+      transform: scale(1.02);
     }
     .scan{
-      position:absolute; inset:-50%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.20), transparent);
+      position:absolute; inset:-60%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
       transform: rotate(18deg);
-      animation: scan 3.6s ease-in-out infinite;
-      opacity:.6;
+      animation: scan 3.8s var(--ease) infinite;
+      opacity:.55;
+      pointer-events:none;
     }
     @keyframes scan{
-      0%{ transform: translateX(-35%) rotate(18deg); }
-      55%{ transform: translateX(40%) rotate(18deg); }
-      100%{ transform: translateX(110%) rotate(18deg); }
+      0%{ transform: translateX(-40%) rotate(18deg); }
+      55%{ transform: translateX(35%) rotate(18deg); }
+      100%{ transform: translateX(120%) rotate(18deg); }
     }
-
     .cardBody{
-      padding: 12px 12px 14px;
+      padding: 14px 14px 16px;
+      display:flex;
+      gap: 14px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      justify-content:space-between;
+    }
+    .cardText{
+      min-width: 220px;
+      flex: 1;
     }
     .cardTitle{
-      font-weight: 800;
+      font-weight: 950;
       letter-spacing: .2px;
-      font-size: 14px;
-      color: rgba(255,255,255,.93);
+      font-size: 15px;
+      color: rgba(255,255,255,.92);
     }
     .cardMeta{
-      margin-top: 7px;
+      margin-top: 8px;
       font-size: 12px;
       color: var(--muted);
-      line-height: 1.35;
+      line-height: 1.4;
     }
-    .badgeRow{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-    .badge{
+
+    .tags{
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .tag{
       font-size: 11px;
-      padding: 5px 9px;
+      padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(240,250,255,.86);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.80);
     }
-    .badge.green{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12); }
-    .badge.purple{ border-color: rgba(168,85,247,.35); background: rgba(168,85,247,.12); }
-    .badge.cyan{ border-color: rgba(76,201,240,.35); background: rgba(76,201,240,.12); }
+    .tag.green{ border-color: rgba(19,242,135,.28); background: rgba(19,242,135,.10); }
 
     /* Viewer */
     .viewer{
-      margin-top: 18px;
+      margin-top: 14px;
       border-radius: 18px;
-      border: 1px solid rgba(76,201,240,.30);
-      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(19,242,135,.26);
+      background: rgba(0,0,0,.40);
       overflow:hidden;
       display:none;
-      box-shadow: 0 0 55px rgba(76,201,240,.12);
+      box-shadow: 0 0 70px rgba(19,242,135,.12);
     }
     .viewerTop{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
+      gap: 12px;
       padding: 12px 12px;
       border-bottom: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.35);
+      background: rgba(0,0,0,.38);
     }
     .viewerTitle{
-      font-weight: 900;
-      font-size: 13px;
-      color: rgba(255,255,255,.92);
       display:flex;
       align-items:center;
-      gap:10px;
+      gap: 10px;
+      font-weight: 950;
+      font-size: 13px;
+      color: rgba(255,255,255,.90);
+      letter-spacing:.2px;
     }
     .dot{
-      width:10px; height:10px; border-radius:99px;
-      background: var(--neon);
-      box-shadow: 0 0 20px rgba(76,201,240,.45);
+      width:10px; height:10px;
+      border-radius:999px;
+      background: var(--g0);
+      box-shadow: 0 0 20px rgba(19,242,135,.40);
     }
-    .viewerActions{ display:flex; gap:10px; align-items:center; }
+    .viewerBtns{ display:flex; gap:10px; }
+
     .mini{
-      padding: 8px 12px;
       min-width:auto;
-      border-radius: 12px;
+      padding: 8px 12px;
+      border-radius: 14px;
       border-color: rgba(255,255,255,.14);
       background: rgba(255,255,255,.06);
       font-size: 12px;
     }
-    .mini:hover{ background: rgba(76,201,240,.10); border-color: rgba(76,201,240,.55); }
+    .mini:hover{
+      border-color: rgba(19,242,135,.55);
+      background: rgba(19,242,135,.07);
+    }
 
     iframe{
       width:100%;
-      height: 520px;
+      height: 560px;
       border:0;
-      background: #000;
-    }
-
-    /* Footer */
-    .footer{
-      text-align:center;
-      color: rgba(255,255,255,.55);
-      margin-top: 16px;
-      font-size: 12px;
+      background:#000;
     }
 
     /* “More coming soon” */
     .coming{
       margin-top: 14px;
       padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px dashed rgba(255,255,255,.18);
-      background: rgba(255,255,255,.05);
-      color: rgba(255,255,255,.75);
+      border-radius: 16px;
+      border: 1px dashed rgba(255,255,255,.16);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.72);
       display:flex; align-items:center; gap:10px;
     }
     .spark{
-      width:10px; height:10px; border-radius:99px;
-      background: linear-gradient(90deg, var(--neon2), var(--neon));
-      box-shadow: 0 0 22px rgba(168,85,247,.35);
-      animation: pulse 1.8s ease-in-out infinite;
+      width:10px; height:10px;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(34,255,176,1), rgba(19,242,135,1));
+      box-shadow: 0 0 20px rgba(19,242,135,.35);
+      animation: pulse 1.7s var(--ease) infinite;
     }
     @keyframes pulse{
       0%,100%{ transform: scale(1); opacity:.85; }
-      50%{ transform: scale(1.25); opacity:1; }
+      50%{ transform: scale(1.28); opacity:1; }
     }
+
+    /* Footer */
+    .foot{
+      margin-top: 14px;
+      text-align:center;
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+      padding-bottom: 6px;
+    }
+
+    /* Small helper link style */
+    a.inline{
+      color: rgba(34,255,176,.92);
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(34,255,176,.35);
+    }
+    a.inline:hover{ border-bottom-color: rgba(34,255,176,.70); }
 
   </style>
 </head>
 
 <body>
-  <canvas id="starfield"></canvas>
-
-  <div class="nebula" id="nebula">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
+  <canvas id="stars"></canvas>
+  <div class="vignette"></div>
+  <div class="dust"></div>
+  <div class="shooting" aria-hidden="true">
+    <span></span><span></span><span></span>
   </div>
 
   <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo"></div>
-        <div>
-          <div class="title"><span class="grad">HUB-ZERO</span></div>
-          <div class="subtitle">Space hub • games • sites • resources</div>
+    <!-- HERO / NAV -->
+    <header class="hero">
+      <div class="heroTop">
+        <div class="brand">
+          <div class="mark" aria-hidden="true"></div>
+          <div class="heroTitle">
+            <h1>Hub Zero</h1>
+            <div class="byline">— by <b>Xylos</b></div>
+          </div>
         </div>
-      </div>
 
-      <div class="nav" id="nav">
-        <div class="btn active" data-page="home">Home</div>
-        <div class="btn" data-page="games">Web Games</div>
-        <div class="btn" data-page="websites">Websites</div>
-        <div class="btn" data-page="credits">Credits</div>
+        <nav class="nav" id="nav" aria-label="Primary">
+          <div class="btn active" role="button" tabindex="0" data-page="home">Home</div>
+          <div class="btn" role="button" tabindex="0" data-page="games">Web Games</div>
+          <div class="btn" role="button" tabindex="0" data-page="websites">Websites</div>
+          <div class="btn" role="button" tabindex="0" data-page="credits">Credits</div>
+        </nav>
       </div>
-    </div>
+    </header>
 
-    <div class="section">
-      <div class="sectionHeader">
+    <!-- MAIN PANEL -->
+    <main class="panel" aria-live="polite">
+      <div class="panelHead">
         <h2 id="sectionTitle">Home</h2>
-        <div class="hint">Tip: edit the text in the HTML where you see “EDIT ME”</div>
+        <div class="tip">Tip: edit anywhere you see <b>EDIT ME</b>.</div>
       </div>
 
       <!-- HOME -->
-      <div class="page active" id="home">
-        <div class="blocks">
-          <!-- EDIT ME: Change these blocks to whatever you want -->
+      <section class="page active" id="home">
+        <div class="grid12">
           <div class="block">
-            <span class="pill">🚀 Welcome</span>
-            <p><strong>EDIT ME:</strong> Write your home page intro here. Keep it short and clean.</p>
+            <span class="pill">🟢 Status</span>
+            <p><strong>EDIT ME:</strong> Write your main intro here. Keep it short. Add your vibe.</p>
           </div>
 
-          <div class="block small">
-            <span class="pill">✨ What’s inside</span>
-            <p><strong>EDIT ME:</strong> Add what your site offers (games, links, tools, etc.).</p>
-          </div>
-
-          <div class="block small">
+          <div class="block half">
             <span class="pill">🛰 Updates</span>
-            <p><strong>EDIT ME:</strong> Add update notes, new releases, announcements, etc.</p>
+            <p><strong>EDIT ME:</strong> Add what’s new (new game, new page, new link, etc.).</p>
+          </div>
+
+          <div class="block half">
+            <span class="pill">🧪 Notes</span>
+            <p><strong>EDIT ME:</strong> Add rules / disclaimer / info for visitors.</p>
           </div>
 
           <div class="block">
-            <span class="pill">🧊 Rules / Notes</span>
-            <p><strong>EDIT ME:</strong> Add your rules or a quick disclaimer here.</p>
+            <span class="pill">🌌 About</span>
+            <p><strong>EDIT ME:</strong> Add a longer section here. Explain what Hub Zero is, how to use it, and what’s coming.</p>
           </div>
         </div>
 
         <div class="coming">
           <div class="spark"></div>
-          <div><strong>More coming soon</strong> — new pages, new games, and more.</div>
+          <div><strong>More coming soon</strong> — expanding the hub.</div>
         </div>
 
-        <div class="footer">Hub-Zero • Space themed UI template</div>
-      </div>
+        <div class="foot">Deep space UI • Green theme • Hub Zero</div>
+      </section>
 
       <!-- WEB GAMES -->
-      <div class="page" id="games">
-        <div class="grid" id="gamesGrid">
-
-          <!-- GAME CARD TEMPLATE (copy/paste to add more) -->
+      <section class="page" id="games">
+        <div class="cardRow">
+          <!-- ONE EXAMPLE ONLY (EDIT ME) -->
           <div class="card"
-               data-title="Game Title (EDIT ME)"
+               id="gameCard"
+               data-kind="game"
+               data-title="Example Web Game (EDIT ME)"
                data-src="https://example.com">
             <div class="thumb">
-              <!-- EDIT ME: replace the image URL (or remove <img> to keep the gradient) -->
-              <img src="https://images.unsplash.com/photo-1546443046-ed1ce6ffd1ab?auto=format&fit=crop&w=1200&q=60" alt="Game thumbnail">
+              <!-- EDIT ME: Replace this image URL with your game thumbnail -->
+              <img src="https://images.unsplash.com/photo-1520975682031-a87f06b3c42f?auto=format&fit=crop&w=1600&q=60" alt="Game thumbnail">
               <div class="scan"></div>
             </div>
+
             <div class="cardBody">
-              <div class="cardTitle">Game Title (EDIT ME)</div>
-              <div class="cardMeta">Click to open the embedded viewer below (iframe). Replace the link later.</div>
-              <div class="badgeRow">
-                <span class="badge cyan">Web</span>
-                <span class="badge purple">Arcade</span>
+              <div class="cardText">
+                <div class="cardTitle">Example Web Game (EDIT ME)</div>
+                <div class="cardMeta">
+                  Click to open the embedded viewer below. Replace <b>data-src</b> with your iframe URL.
+                </div>
+              </div>
+
+              <div class="tags">
+                <span class="tag green">Web</span>
+                <span class="tag">Play</span>
               </div>
             </div>
           </div>
-
-          <div class="card" data-title="Space Runner (EDIT ME)" data-src="https://example.com">
-            <div class="thumb">
-              <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=60" alt="Game thumbnail">
-              <div class="scan"></div>
-            </div>
-            <div class="cardBody">
-              <div class="cardTitle">Space Runner (EDIT ME)</div>
-              <div class="cardMeta">Replace: image + title + iframe URL.</div>
-              <div class="badgeRow">
-                <span class="badge cyan">Web</span>
-                <span class="badge green">Fast</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" data-title="Puzzle Nebula (EDIT ME)" data-src="https://example.com">
-            <div class="thumb">
-              <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=60" alt="Game thumbnail">
-              <div class="scan"></div>
-            </div>
-            <div class="cardBody">
-              <div class="cardTitle">Puzzle Nebula (EDIT ME)</div>
-              <div class="cardMeta">Template card. Click to load viewer.</div>
-              <div class="badgeRow">
-                <span class="badge purple">Puzzle</span>
-                <span class="badge cyan">Web</span>
-              </div>
-            </div>
-          </div>
-
         </div>
 
-        <div class="coming">
-          <div class="spark"></div>
-          <div><strong>More coming soon</strong> — more web games will be added here.</div>
-        </div>
-
-        <!-- Viewer (shows the clicked game in an iframe) -->
         <div class="viewer" id="gameViewer">
           <div class="viewerTop">
-            <div class="viewerTitle"><span class="dot"></span><span id="gameViewerTitle">Viewer</span></div>
-            <div class="viewerActions">
-              <div class="btn mini" id="gameReload">Reload</div>
-              <div class="btn mini" id="gameClose">Close</div>
+            <div class="viewerTitle"><span class="dot"></span><span id="gameViewerTitle">Game Viewer</span></div>
+            <div class="viewerBtns">
+              <div class="btn mini" id="gameReload" role="button" tabindex="0">Reload</div>
+              <div class="btn mini" id="gameClose" role="button" tabindex="0">Close</div>
             </div>
           </div>
-          <!-- EDIT ME: iframe loads whatever you set in data-src -->
-          <iframe id="gameFrame" src=""></iframe>
-        </div>
-
-        <div class="footer">Tip: Some sites won’t embed due to their security settings (X-Frame-Options). Use pages that allow iframes.</div>
-      </div>
-
-      <!-- WEBSITES -->
-      <div class="page" id="websites">
-        <div class="grid" id="sitesGrid">
-
-          <!-- WEBSITE CARD TEMPLATE (slightly different) -->
-          <div class="card"
-               data-title="Website Name (EDIT ME)"
-               data-src="https://example.com">
-            <div class="thumb">
-              <!-- EDIT ME: replace with your website preview image -->
-              <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=60" alt="Website thumbnail">
-              <div class="scan"></div>
-            </div>
-            <div class="cardBody">
-              <div class="cardTitle">Website Name (EDIT ME)</div>
-              <div class="cardMeta">Description (EDIT ME). Click to open below.</div>
-              <div class="badgeRow">
-                <span class="badge green">Site</span>
-                <span class="badge cyan">Tools</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" data-title="Cool Portal (EDIT ME)" data-src="https://example.com">
-            <div class="thumb">
-              <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=60" alt="Website thumbnail">
-              <div class="scan"></div>
-            </div>
-            <div class="cardBody">
-              <div class="cardTitle">Cool Portal (EDIT ME)</div>
-              <div class="cardMeta">Replace image/title/link. Opens in the viewer.</div>
-              <div class="badgeRow">
-                <span class="badge green">Site</span>
-                <span class="badge purple">Links</span>
-              </div>
-            </div>
-          </div>
-
+          <iframe id="gameFrame" src="" title="Game embed"></iframe>
         </div>
 
         <div class="coming">
           <div class="spark"></div>
-          <div><strong>More coming soon</strong> — more websites will be added here.</div>
+          <div><strong>More coming soon</strong> — add more games by duplicating the card.</div>
+        </div>
+
+        <div class="foot">
+          If an embed shows blank, that site likely blocks iframes. Host your own embed-friendly page.
+        </div>
+      </section>
+
+      <!-- WEBSITES -->
+      <section class="page" id="websites">
+        <div class="cardRow">
+          <!-- ONE EXAMPLE ONLY (EDIT ME) -->
+          <div class="card"
+               id="siteCard"
+               data-kind="site"
+               data-title="Example Website (EDIT ME)"
+               data-src="https://example.com">
+            <div class="thumb">
+              <!-- EDIT ME: Replace with your website preview image -->
+              <img src="https://images.unsplash.com/photo-1484950763426-56b5bf172dbb?auto=format&fit=crop&w=1600&q=60" alt="Website thumbnail">
+              <div class="scan"></div>
+            </div>
+
+            <div class="cardBody">
+              <div class="cardText">
+                <div class="cardTitle">Example Website (EDIT ME)</div>
+                <div class="cardMeta">
+                  Click to open the site below in an iframe viewer. Replace the <b>data-src</b> link.
+                </div>
+              </div>
+
+              <div class="tags">
+                <span class="tag green">Site</span>
+                <span class="tag">Links</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="viewer" id="siteViewer">
           <div class="viewerTop">
-            <div class="viewerTitle"><span class="dot"></span><span id="siteViewerTitle">Viewer</span></div>
-            <div class="viewerActions">
-              <div class="btn mini" id="siteReload">Reload</div>
-              <div class="btn mini" id="siteClose">Close</div>
+            <div class="viewerTitle"><span class="dot"></span><span id="siteViewerTitle">Site Viewer</span></div>
+            <div class="viewerBtns">
+              <div class="btn mini" id="siteReload" role="button" tabindex="0">Reload</div>
+              <div class="btn mini" id="siteClose" role="button" tabindex="0">Close</div>
             </div>
           </div>
-          <iframe id="siteFrame" src=""></iframe>
+          <iframe id="siteFrame" src="" title="Website embed"></iframe>
         </div>
 
-        <div class="footer">Websites viewer • embed-friendly only</div>
-      </div>
+        <div class="coming">
+          <div class="spark"></div>
+          <div><strong>More coming soon</strong> — add more sites by duplicating the card.</div>
+        </div>
+
+        <div class="foot">Embed-friendly websites only (some block iframe embedding).</div>
+      </section>
 
       <!-- CREDITS -->
-      <div class="page" id="credits">
-        <div class="blocks">
+      <section class="page" id="credits">
+        <div class="grid12">
           <div class="block">
             <span class="pill">🧾 Credits</span>
-            <p><strong>EDIT ME:</strong> Put your name + helpers here.</p>
-            <p style="margin-top:10px; color: rgba(255,255,255,.72);">
-              Example: Built by <strong>Nadine</strong> • Theme: Hub-Zero • 2026
+            <p><strong>EDIT ME:</strong> Put your credits here (you, helpers, sources, etc.).</p>
+            <p>Example: Built by <strong>Xylos</strong> • Theme: Hub Zero • Deep Space Green</p>
+          </div>
+
+          <div class="block">
+            <span class="pill">🧠 Tips</span>
+            <p>
+              - Click effects: ripple on buttons, tilt on cards.<br>
+              - If you want the default page to open to “Web Games”, add <code>#games</code> to your URL.
+            </p>
+            <p>
+              Want to add more cards? Duplicate the example card and change
+              <code>data-title</code>, <code>data-src</code>, and the image.
             </p>
           </div>
 
           <div class="block">
-            <span class="pill">🛰 Notes</span>
-            <p>Buttons have ripple effects. Cards tilt on hover. Click a card to load its iframe below.</p>
+            <span class="pill">🔗 Handy</span>
+            <p>
+              If you’re using GitHub Pages, your live URL is usually like:
+              <br><a class="inline" href="#" onclick="return false;">https://USERNAME.github.io/REPO/</a>
+            </p>
           </div>
         </div>
 
-        <div class="footer">Hub-Zero • Credits</div>
-      </div>
-
-    </div>
+        <div class="foot">Hub Zero — by Xylos</div>
+      </section>
+    </main>
   </div>
 
   <script>
-    /* ===== NAV + RIPPLE + PAGE SWITCH ===== */
-    const nav = document.getElementById('nav');
+    /* =========================================================
+       HUB ZERO JS
+       - Hash routing: /#home /#games /#websites /#credits
+       - Ripple effects
+       - Card tilt + viewer
+       - Canvas starfield (deep space)
+       ========================================================= */
+
+    // ---------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+
+    // ---------- Navigation ----------
+    const nav = $("nav");
+    const navButtons = Array.from(document.querySelectorAll("#nav .btn"));
     const pages = ["home","games","websites","credits"];
-    const sectionTitle = document.getElementById('sectionTitle');
+    const sectionTitle = $("sectionTitle");
 
-    function setActive(pageId){
-      pages.forEach(id=>{
-        document.getElementById(id).classList.toggle('active', id === pageId);
-      });
-
-      [...nav.querySelectorAll('.btn')].forEach(b=>{
-        b.classList.toggle('active', b.dataset.page === pageId);
-      });
-
-      sectionTitle.textContent = pageId === "home" ? "Home"
-        : pageId === "games" ? "Web Games"
-        : pageId === "websites" ? "Websites"
-        : "Credits";
-
-      // close viewers when switching
-      closeViewer('game');
-      closeViewer('site');
+    function labelFor(pageId){
+      if(pageId === "home") return "Home";
+      if(pageId === "games") return "Web Games";
+      if(pageId === "websites") return "Websites";
+      return "Credits";
     }
 
-    nav.addEventListener('click', (e)=>{
-      const btn = e.target.closest('.btn');
-      if(!btn) return;
+    function setActive(pageId, {scrollTop=false} = {}){
+      if(!pages.includes(pageId)) pageId = "home";
 
-      // Ripple
-      const r = document.createElement('span');
+      pages.forEach(id => {
+        $(id).classList.toggle("active", id === pageId);
+      });
+
+      navButtons.forEach(b => {
+        b.classList.toggle("active", b.dataset.page === pageId);
+      });
+
+      sectionTitle.textContent = labelFor(pageId);
+
+      // Close viewers when switching pages
+      closeViewer("game");
+      closeViewer("site");
+
+      if(scrollTop){
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function setHash(pageId){
+      history.replaceState(null, "", "#" + pageId);
+    }
+
+    function routeFromHash(){
+      const h = (location.hash || "#home").replace("#","");
+      setActive(h);
+    }
+    window.addEventListener("hashchange", routeFromHash);
+    routeFromHash();
+
+    // Click + Ripple
+    function addRipple(el, ev){
+      const r = document.createElement("span");
       r.className = "ripple";
-      const rect = btn.getBoundingClientRect();
-      r.style.left = (e.clientX - rect.left) + "px";
-      r.style.top  = (e.clientY - rect.top) + "px";
-      btn.appendChild(r);
-      setTimeout(()=> r.remove(), 600);
+      const rect = el.getBoundingClientRect();
+      r.style.left = (ev.clientX - rect.left) + "px";
+      r.style.top  = (ev.clientY - rect.top) + "px";
+      el.appendChild(r);
+      setTimeout(() => r.remove(), 650);
+    }
 
-      setActive(btn.dataset.page);
+    navButtons.forEach(btn => {
+      btn.addEventListener("click", (ev) => {
+        addRipple(btn, ev);
+        const pageId = btn.dataset.page;
+        setActive(pageId, {scrollTop:false});
+        setHash(pageId);
+      });
+
+      // Keyboard accessible
+      btn.addEventListener("keydown", (ev) => {
+        if(ev.key === "Enter" || ev.key === " "){
+          ev.preventDefault();
+          btn.click();
+        }
+      });
     });
 
-    /* ===== CARD TILT ===== */
+    // ---------- Card tilt ----------
     function addTilt(card){
-      card.addEventListener('mousemove', (e)=>{
+      card.addEventListener("mousemove", (e) => {
         const rect = card.getBoundingClientRect();
         const x = (e.clientX - rect.left) / rect.width;
         const y = (e.clientY - rect.top) / rect.height;
-        const rx = (0.5 - y) * 8;
+        const rx = (0.5 - y) * 7;
         const ry = (x - 0.5) * 10;
         card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
       });
-      card.addEventListener('mouseleave', ()=>{
+      card.addEventListener("mouseleave", () => {
         card.style.transform = `perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
       });
     }
 
-    /* ===== VIEWERS ===== */
-    const gameViewer = document.getElementById('gameViewer');
-    const gameFrame  = document.getElementById('gameFrame');
-    const gameViewerTitle = document.getElementById('gameViewerTitle');
+    // ---------- Viewers ----------
+    const gameViewer = $("gameViewer");
+    const gameFrame = $("gameFrame");
+    const gameViewerTitle = $("gameViewerTitle");
 
-    const siteViewer = document.getElementById('siteViewer');
-    const siteFrame  = document.getElementById('siteFrame');
-    const siteViewerTitle = document.getElementById('siteViewerTitle');
+    const siteViewer = $("siteViewer");
+    const siteFrame = $("siteFrame");
+    const siteViewerTitle = $("siteViewerTitle");
 
     function openViewer(kind, title, src){
       if(kind === "game"){
         gameViewerTitle.textContent = title;
         gameFrame.src = src;
         gameViewer.style.display = "block";
-        gameViewer.scrollIntoView({behavior:"smooth", block:"start"});
+        gameViewer.scrollIntoView({ behavior: "smooth", block: "start" });
       }else{
         siteViewerTitle.textContent = title;
         siteFrame.src = src;
         siteViewer.style.display = "block";
-        siteViewer.scrollIntoView({behavior:"smooth", block:"start"});
+        siteViewer.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
-
     function closeViewer(kind){
       if(kind === "game"){
         gameFrame.src = "";
@@ -733,74 +869,120 @@
       }
     }
 
-    // Wire card clicks
-    function wireCards(containerId, kind){
-      const container = document.getElementById(containerId);
-      [...container.querySelectorAll('.card')].forEach(card=>{
-        addTilt(card);
-        card.addEventListener('click', ()=>{
-          const title = card.dataset.title || "Viewer";
-          const src = card.dataset.src || "about:blank";
-          openViewer(kind, title, src);
-        });
+    // Wire example cards (one per section)
+    const gameCard = $("gameCard");
+    const siteCard = $("siteCard");
+    [gameCard, siteCard].forEach(card => {
+      addTilt(card);
+      card.addEventListener("click", () => {
+        const kind = card.dataset.kind; // game or site
+        const title = card.dataset.title || "Viewer";
+        const src = card.dataset.src || "about:blank";
+        openViewer(kind, title, src);
       });
-    }
-    wireCards("gamesGrid","game");
-    wireCards("sitesGrid","site");
+    });
 
     // Viewer buttons
-    document.getElementById('gameClose').onclick = ()=> closeViewer("game");
-    document.getElementById('siteClose').onclick = ()=> closeViewer("site");
+    $("gameClose").addEventListener("click", (e) => { addRipple(e.currentTarget, e); closeViewer("game"); });
+    $("siteClose").addEventListener("click", (e) => { addRipple(e.currentTarget, e); closeViewer("site"); });
 
-    document.getElementById('gameReload').onclick = ()=>{
+    $("gameReload").addEventListener("click", (e) => {
+      addRipple(e.currentTarget, e);
       if(gameFrame.src) gameFrame.src = gameFrame.src;
-    };
-    document.getElementById('siteReload').onclick = ()=>{
+    });
+    $("siteReload").addEventListener("click", (e) => {
+      addRipple(e.currentTarget, e);
       if(siteFrame.src) siteFrame.src = siteFrame.src;
-    };
+    });
 
-    /* ===== STARFIELD CANVAS ===== */
-    const canvas = document.getElementById('starfield');
-    const ctx = canvas.getContext('2d');
+    // Keyboard accessibility for mini buttons
+    ["gameClose","siteClose","gameReload","siteReload"].forEach(id=>{
+      const el = $(id);
+      el.addEventListener("keydown", (ev)=>{
+        if(ev.key === "Enter" || ev.key === " "){
+          ev.preventDefault();
+          el.click();
+        }
+      });
+    });
 
-    let W, H, stars;
+    // ---------- Canvas starfield (deep space) ----------
+    const canvas = $("stars");
+    const ctx = canvas.getContext("2d", { alpha: true });
+
+    let W=0, H=0;
+    let stars = [];
+    let t = 0;
+
     function resize(){
-      W = canvas.width  = window.innerWidth;
+      W = canvas.width = window.innerWidth;
       H = canvas.height = window.innerHeight;
-      const count = Math.min(220, Math.floor((W*H)/9000));
-      stars = Array.from({length: count}, ()=>({
+
+      const density = Math.min(320, Math.floor((W*H)/7000));
+      stars = Array.from({ length: density }, () => ({
         x: Math.random()*W,
         y: Math.random()*H,
-        z: 0.2 + Math.random()*1.6,
-        r: 0.4 + Math.random()*1.7,
-        tw: Math.random()*Math.PI*2
+        z: 0.15 + Math.random()*1.85,       // depth / speed
+        r: 0.25 + Math.random()*1.6,        // radius
+        tw: Math.random()*Math.PI*2,        // twinkle phase
+        hue: 110 + Math.random()*30,        // slight green tint range
+        a: 0.20 + Math.random()*0.55        // base alpha
       }));
     }
-    window.addEventListener('resize', resize);
+    window.addEventListener("resize", resize);
     resize();
 
+    // Subtle mouse parallax
+    let mx = 0, my = 0;
+    window.addEventListener("mousemove", (e)=>{
+      mx = (e.clientX / window.innerWidth) - 0.5;
+      my = (e.clientY / window.innerHeight) - 0.5;
+    });
+
     function draw(){
+      t += 0.01;
+
       ctx.clearRect(0,0,W,H);
 
-      // subtle space haze
-      const g = ctx.createRadialGradient(W*0.2, H*0.1, 50, W*0.2, H*0.1, Math.max(W,H));
-      g.addColorStop(0, "rgba(76,201,240,.06)");
-      g.addColorStop(0.35, "rgba(168,85,247,.05)");
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = g;
+      // Deep haze (very subtle)
+      const haze = ctx.createRadialGradient(W*0.25, H*0.1, 40, W*0.25, H*0.1, Math.max(W,H));
+      haze.addColorStop(0, "rgba(19,242,135,0.05)");
+      haze.addColorStop(0.5, "rgba(0,0,0,0)");
+      haze.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = haze;
       ctx.fillRect(0,0,W,H);
 
+      // Stars
       for(const s of stars){
+        // drift (deep space feel)
         s.tw += 0.02*s.z;
-        s.y += 0.10*s.z;     // drift downward
-        s.x += 0.03*s.z;     // drift sideways
-        if(s.y > H+10) s.y = -10;
-        if(s.x > W+10) s.x = -10;
 
-        const alpha = 0.25 + (Math.sin(s.tw)*0.25 + 0.25);
+        const driftX = (0.02*s.z) + mx*0.15*s.z;
+        const driftY = (0.08*s.z) + my*0.12*s.z;
+
+        s.x += driftX;
+        s.y += driftY;
+
+        if(s.y > H + 10) s.y = -10;
+        if(s.x > W + 10) s.x = -10;
+
+        const twinkle = 0.25 + (Math.sin(s.tw) * 0.22 + 0.22);
+        const alpha = Math.max(0, Math.min(1, s.a * twinkle));
+
+        // a few slightly green stars mixed with white
+        const greenish = (Math.sin(s.tw*0.7) * 0.5 + 0.5); // 0..1
+        const gA = alpha * 0.45 * greenish;
+
+        // white core
         ctx.beginPath();
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+
+        // faint green glow
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(19,242,135,${gA})`;
+        ctx.arc(s.x, s.y, s.r*1.8, 0, Math.PI*2);
         ctx.fill();
       }
 
@@ -808,13 +990,8 @@
     }
     draw();
 
-    /* ===== Nebula parallax (mouse) ===== */
-    const nebula = document.getElementById('nebula');
-    window.addEventListener('mousemove', (e)=>{
-      const nx = (e.clientX / window.innerWidth) - 0.5;
-      const ny = (e.clientY / window.innerHeight) - 0.5;
-      nebula.style.transform = `translate3d(${nx*14}px, ${ny*10}px, 0)`;
-    });
+    // ---------- Optional: start on a specific page via hash ----------
+    // Example: https://.../hub-zero/#games
   </script>
 </body>
 </html>
