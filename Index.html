@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hub-Zero</title>
+
+  <style>
+    :root{
+      --bg0:#04050b;
+      --bg1:#070a1a;
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(0,0,0,.45);
+      --border: rgba(160,210,255,.18);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --neon: #4cc9f0;
+      --neon2:#a855f7;
+      --neon3:#22c55e;
+      --warn:#f59e0b;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 20px;
+    }
+
+    /* Base */
+    *{ box-sizing:border-box; margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    html,body{ height:100%; }
+    body{
+      color: var(--text);
+      background: radial-gradient(1200px 900px at 10% 0%, #0b1450 0%, transparent 60%),
+                  radial-gradient(900px 700px at 90% 20%, #2a0d3f 0%, transparent 60%),
+                  radial-gradient(900px 700px at 50% 110%, #041b2d 0%, transparent 60%),
+                  linear-gradient(180deg, var(--bg1), var(--bg0));
+      overflow-x:hidden;
+    }
+
+    /* Motion preference */
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+      canvas{ display:none !important; }
+    }
+
+    /* Star canvas */
+    #starfield{
+      position: fixed; inset:0;
+      width:100%; height:100%;
+      z-index:-3;
+    }
+
+    /* Soft nebula blobs */
+    .nebula{
+      position: fixed; inset:0;
+      z-index:-2;
+      pointer-events:none;
+      filter: blur(40px) saturate(140%);
+      opacity:.55;
+    }
+    .blob{
+      position:absolute; border-radius:999px;
+      mix-blend-mode: screen;
+      animation: floaty 10s ease-in-out infinite;
+    }
+    .blob.b1{ width:540px; height:540px; left:-120px; top:80px; background: radial-gradient(circle at 30% 30%, rgba(76,201,240,.50), transparent 65%); }
+    .blob.b2{ width:520px; height:520px; right:-160px; top:140px; background: radial-gradient(circle at 60% 40%, rgba(168,85,247,.45), transparent 65%); animation-duration: 13s; }
+    .blob.b3{ width:520px; height:520px; left:30%; bottom:-220px; background: radial-gradient(circle at 50% 30%, rgba(34,197,94,.22), transparent 65%); animation-duration: 16s; }
+
+    @keyframes floaty{
+      0%,100%{ transform: translate3d(0,0,0) scale(1); }
+      50%{ transform: translate3d(0,-18px,0) scale(1.03); }
+    }
+
+    /* Layout container */
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 22px 16px 80px;
+    }
+
+    /* Top header */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding: 14px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.35));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 12px;
+      z-index: 50;
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      min-width: 200px;
+    }
+    .logo{
+      width: 38px; height: 38px; border-radius: 12px;
+      background: radial-gradient(circle at 30% 30%, rgba(76,201,240,.95), rgba(168,85,247,.75) 55%, rgba(0,0,0,.2) 100%);
+      box-shadow: 0 0 28px rgba(76,201,240,.35);
+      border:1px solid rgba(255,255,255,.12);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+      transform: rotate(25deg);
+      animation: sheen 2.6s ease-in-out infinite;
+      opacity:.7;
+    }
+    @keyframes sheen{
+      0%{ transform: translateX(-40%) rotate(25deg); }
+      55%{ transform: translateX(60%) rotate(25deg); }
+      100%{ transform: translateX(120%) rotate(25deg); }
+    }
+
+    .title{
+      line-height:1.0;
+      font-weight:900;
+      letter-spacing:.5px;
+      font-size: 18px;
+    }
+    .title .grad{
+      background: linear-gradient(90deg, var(--neon), var(--neon2), #ffffff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 30px rgba(76,201,240,.25);
+    }
+    .subtitle{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* Nav buttons */
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      flex:1;
+    }
+    .btn{
+      position:relative;
+      border: 1px solid rgba(76,201,240,.35);
+      background: rgba(0,0,0,.25);
+      color: rgba(240,250,255,.92);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+      overflow:hidden;
+      min-width: 108px;
+      text-align:center;
+      backdrop-filter: blur(6px);
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 0 26px rgba(76,201,240,.18);
+      border-color: rgba(76,201,240,.7);
+      background: rgba(76,201,240,.10);
+    }
+    .btn.active{
+      border-color: rgba(168,85,247,.75);
+      background: rgba(168,85,247,.14);
+      box-shadow: 0 0 28px rgba(168,85,247,.16);
+    }
+
+    /* Ripple */
+    .ripple{
+      position:absolute;
+      border-radius:999px;
+      transform: translate(-50%,-50%);
+      pointer-events:none;
+      background: radial-gradient(circle, rgba(76,201,240,.55), transparent 60%);
+      width: 12px; height: 12px;
+      animation: rip .55s ease-out forwards;
+      filter: blur(.2px);
+    }
+    @keyframes rip{
+      to{ width: 340px; height: 340px; opacity: 0; }
+    }
+
+    /* Sections + transitions */
+    .section{
+      margin-top: 22px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.35));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+
+    .sectionHeader{
+      padding: 18px 18px 0;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .sectionHeader h2{
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      opacity:.95;
+    }
+
+    .page{
+      display:none;
+      padding: 18px;
+      animation: pageIn .45s ease;
+      transform-origin: top center;
+    }
+    .page.active{ display:block; }
+
+    @keyframes pageIn{
+      from{ opacity:0; transform: translateY(10px) scale(.99); }
+      to{ opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* Editable home blocks */
+    .blocks{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .block{
+      grid-column: span 12;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.30);
+      box-shadow: 0 0 0 1px rgba(76,201,240,.03) inset;
+    }
+    .block strong{ color: rgba(240,250,255,.95); }
+    .block p{ color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .block.small{ grid-column: span 12; }
+    @media(min-width: 900px){
+      .block.small{ grid-column: span 6; }
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(76,201,240,.22);
+      background: rgba(76,201,240,.08);
+      font-size: 12px;
+      color: rgba(240,250,255,.88);
+    }
+
+    /* Cards */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .card{
+      position:relative;
+      border-radius: 18px;
+      overflow:hidden;
+      border: 1px solid rgba(76,201,240,.22);
+      background: rgba(0,0,0,.30);
+      cursor:pointer;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      transform: perspective(900px) translateZ(0);
+      will-change: transform;
+    }
+    .card:hover{
+      border-color: rgba(76,201,240,.65);
+      box-shadow: 0 0 40px rgba(76,201,240,.18);
+    }
+
+    .thumb{
+      height: 130px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(76,201,240,.45), transparent 60%),
+        radial-gradient(circle at 70% 20%, rgba(168,85,247,.35), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.55));
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      position:relative;
+      overflow:hidden;
+    }
+    .thumb img{
+      width:100%; height:100%; object-fit:cover; display:block;
+      opacity:.92;
+    }
+    .scan{
+      position:absolute; inset:-50%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.20), transparent);
+      transform: rotate(18deg);
+      animation: scan 3.6s ease-in-out infinite;
+      opacity:.6;
+    }
+    @keyframes scan{
+      0%{ transform: translateX(-35%) rotate(18deg); }
+      55%{ transform: translateX(40%) rotate(18deg); }
+      100%{ transform: translateX(110%) rotate(18deg); }
+    }
+
+    .cardBody{
+      padding: 12px 12px 14px;
+    }
+    .cardTitle{
+      font-weight: 800;
+      letter-spacing: .2px;
+      font-size: 14px;
+      color: rgba(255,255,255,.93);
+    }
+    .cardMeta{
+      margin-top: 7px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .badgeRow{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .badge{
+      font-size: 11px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(240,250,255,.86);
+    }
+    .badge.green{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12); }
+    .badge.purple{ border-color: rgba(168,85,247,.35); background: rgba(168,85,247,.12); }
+    .badge.cyan{ border-color: rgba(76,201,240,.35); background: rgba(76,201,240,.12); }
+
+    /* Viewer */
+    .viewer{
+      margin-top: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(76,201,240,.30);
+      background: rgba(0,0,0,.35);
+      overflow:hidden;
+      display:none;
+      box-shadow: 0 0 55px rgba(76,201,240,.12);
+    }
+    .viewerTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.35);
+    }
+    .viewerTitle{
+      font-weight: 900;
+      font-size: 13px;
+      color: rgba(255,255,255,.92);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:99px;
+      background: var(--neon);
+      box-shadow: 0 0 20px rgba(76,201,240,.45);
+    }
+    .viewerActions{ display:flex; gap:10px; align-items:center; }
+    .mini{
+      padding: 8px 12px;
+      min-width:auto;
+      border-radius: 12px;
+      border-color: rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      font-size: 12px;
+    }
+    .mini:hover{ background: rgba(76,201,240,.10); border-color: rgba(76,201,240,.55); }
+
+    iframe{
+      width:100%;
+      height: 520px;
+      border:0;
+      background: #000;
+    }
+
+    /* Footer */
+    .footer{
+      text-align:center;
+      color: rgba(255,255,255,.55);
+      margin-top: 16px;
+      font-size: 12px;
+    }
+
+    /* “More coming soon” */
+    .coming{
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px dashed rgba(255,255,255,.18);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.75);
+      display:flex; align-items:center; gap:10px;
+    }
+    .spark{
+      width:10px; height:10px; border-radius:99px;
+      background: linear-gradient(90deg, var(--neon2), var(--neon));
+      box-shadow: 0 0 22px rgba(168,85,247,.35);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{ transform: scale(1); opacity:.85; }
+      50%{ transform: scale(1.25); opacity:1; }
+    }
+
+  </style>
+</head>
+
+<body>
+  <canvas id="starfield"></canvas>
+
+  <div class="nebula" id="nebula">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div class="title"><span class="grad">HUB-ZERO</span></div>
+          <div class="subtitle">Space hub • games • sites • resources</div>
+        </div>
+      </div>
+
+      <div class="nav" id="nav">
+        <div class="btn active" data-page="home">Home</div>
+        <div class="btn" data-page="games">Web Games</div>
+        <div class="btn" data-page="websites">Websites</div>
+        <div class="btn" data-page="credits">Credits</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectionHeader">
+        <h2 id="sectionTitle">Home</h2>
+        <div class="hint">Tip: edit the text in the HTML where you see “EDIT ME”</div>
+      </div>
+
+      <!-- HOME -->
+      <div class="page active" id="home">
+        <div class="blocks">
+          <!-- EDIT ME: Change these blocks to whatever you want -->
+          <div class="block">
+            <span class="pill">🚀 Welcome</span>
+            <p><strong>EDIT ME:</strong> Write your home page intro here. Keep it short and clean.</p>
+          </div>
+
+          <div class="block small">
+            <span class="pill">✨ What’s inside</span>
+            <p><strong>EDIT ME:</strong> Add what your site offers (games, links, tools, etc.).</p>
+          </div>
+
+          <div class="block small">
+            <span class="pill">🛰 Updates</span>
+            <p><strong>EDIT ME:</strong> Add update notes, new releases, announcements, etc.</p>
+          </div>
+
+          <div class="block">
+            <span class="pill">🧊 Rules / Notes</span>
+            <p><strong>EDIT ME:</strong> Add your rules or a quick disclaimer here.</p>
+          </div>
+        </div>
+
+        <div class="coming">
+          <div class="spark"></div>
+          <div><strong>More coming soon</strong> — new pages, new games, and more.</div>
+        </div>
+
+        <div class="footer">Hub-Zero • Space themed UI template</div>
+      </div>
+
+      <!-- WEB GAMES -->
+      <div class="page" id="games">
+        <div class="grid" id="gamesGrid">
+
+          <!-- GAME CARD TEMPLATE (copy/paste to add more) -->
+          <div class="card"
+               data-title="Game Title (EDIT ME)"
+               data-src="https://example.com">
+            <div class="thumb">
+              <!-- EDIT ME: replace the image URL (or remove <img> to keep the gradient) -->
+              <img src="https://images.unsplash.com/photo-1546443046-ed1ce6ffd1ab?auto=format&fit=crop&w=1200&q=60" alt="Game thumbnail">
+              <div class="scan"></div>
+            </div>
+            <div class="cardBody">
+              <div class="cardTitle">Game Title (EDIT ME)</div>
+              <div class="cardMeta">Click to open the embedded viewer below (iframe). Replace the link later.</div>
+              <div class="badgeRow">
+                <span class="badge cyan">Web</span>
+                <span class="badge purple">Arcade</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-title="Space Runner (EDIT ME)" data-src="https://example.com">
+            <div class="thumb">
+              <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=60" alt="Game thumbnail">
+              <div class="scan"></div>
+            </div>
+            <div class="cardBody">
+              <div class="cardTitle">Space Runner (EDIT ME)</div>
+              <div class="cardMeta">Replace: image + title + iframe URL.</div>
+              <div class="badgeRow">
+                <span class="badge cyan">Web</span>
+                <span class="badge green">Fast</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-title="Puzzle Nebula (EDIT ME)" data-src="https://example.com">
+            <div class="thumb">
+              <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=60" alt="Game thumbnail">
+              <div class="scan"></div>
+            </div>
+            <div class="cardBody">
+              <div class="cardTitle">Puzzle Nebula (EDIT ME)</div>
+              <div class="cardMeta">Template card. Click to load viewer.</div>
+              <div class="badgeRow">
+                <span class="badge purple">Puzzle</span>
+                <span class="badge cyan">Web</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="coming">
+          <div class="spark"></div>
+          <div><strong>More coming soon</strong> — more web games will be added here.</div>
+        </div>
+
+        <!-- Viewer (shows the clicked game in an iframe) -->
+        <div class="viewer" id="gameViewer">
+          <div class="viewerTop">
+            <div class="viewerTitle"><span class="dot"></span><span id="gameViewerTitle">Viewer</span></div>
+            <div class="viewerActions">
+              <div class="btn mini" id="gameReload">Reload</div>
+              <div class="btn mini" id="gameClose">Close</div>
+            </div>
+          </div>
+          <!-- EDIT ME: iframe loads whatever you set in data-src -->
+          <iframe id="gameFrame" src=""></iframe>
+        </div>
+
+        <div class="footer">Tip: Some sites won’t embed due to their security settings (X-Frame-Options). Use pages that allow iframes.</div>
+      </div>
+
+      <!-- WEBSITES -->
+      <div class="page" id="websites">
+        <div class="grid" id="sitesGrid">
+
+          <!-- WEBSITE CARD TEMPLATE (slightly different) -->
+          <div class="card"
+               data-title="Website Name (EDIT ME)"
+               data-src="https://example.com">
+            <div class="thumb">
+              <!-- EDIT ME: replace with your website preview image -->
+              <img src="https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=60" alt="Website thumbnail">
+              <div class="scan"></div>
+            </div>
+            <div class="cardBody">
+              <div class="cardTitle">Website Name (EDIT ME)</div>
+              <div class="cardMeta">Description (EDIT ME). Click to open below.</div>
+              <div class="badgeRow">
+                <span class="badge green">Site</span>
+                <span class="badge cyan">Tools</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" data-title="Cool Portal (EDIT ME)" data-src="https://example.com">
+            <div class="thumb">
+              <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=60" alt="Website thumbnail">
+              <div class="scan"></div>
+            </div>
+            <div class="cardBody">
+              <div class="cardTitle">Cool Portal (EDIT ME)</div>
+              <div class="cardMeta">Replace image/title/link. Opens in the viewer.</div>
+              <div class="badgeRow">
+                <span class="badge green">Site</span>
+                <span class="badge purple">Links</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="coming">
+          <div class="spark"></div>
+          <div><strong>More coming soon</strong> — more websites will be added here.</div>
+        </div>
+
+        <div class="viewer" id="siteViewer">
+          <div class="viewerTop">
+            <div class="viewerTitle"><span class="dot"></span><span id="siteViewerTitle">Viewer</span></div>
+            <div class="viewerActions">
+              <div class="btn mini" id="siteReload">Reload</div>
+              <div class="btn mini" id="siteClose">Close</div>
+            </div>
+          </div>
+          <iframe id="siteFrame" src=""></iframe>
+        </div>
+
+        <div class="footer">Websites viewer • embed-friendly only</div>
+      </div>
+
+      <!-- CREDITS -->
+      <div class="page" id="credits">
+        <div class="blocks">
+          <div class="block">
+            <span class="pill">🧾 Credits</span>
+            <p><strong>EDIT ME:</strong> Put your name + helpers here.</p>
+            <p style="margin-top:10px; color: rgba(255,255,255,.72);">
+              Example: Built by <strong>Nadine</strong> • Theme: Hub-Zero • 2026
+            </p>
+          </div>
+
+          <div class="block">
+            <span class="pill">🛰 Notes</span>
+            <p>Buttons have ripple effects. Cards tilt on hover. Click a card to load its iframe below.</p>
+          </div>
+        </div>
+
+        <div class="footer">Hub-Zero • Credits</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ===== NAV + RIPPLE + PAGE SWITCH ===== */
+    const nav = document.getElementById('nav');
+    const pages = ["home","games","websites","credits"];
+    const sectionTitle = document.getElementById('sectionTitle');
+
+    function setActive(pageId){
+      pages.forEach(id=>{
+        document.getElementById(id).classList.toggle('active', id === pageId);
+      });
+
+      [...nav.querySelectorAll('.btn')].forEach(b=>{
+        b.classList.toggle('active', b.dataset.page === pageId);
+      });
+
+      sectionTitle.textContent = pageId === "home" ? "Home"
+        : pageId === "games" ? "Web Games"
+        : pageId === "websites" ? "Websites"
+        : "Credits";
+
+      // close viewers when switching
+      closeViewer('game');
+      closeViewer('site');
+    }
+
+    nav.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.btn');
+      if(!btn) return;
+
+      // Ripple
+      const r = document.createElement('span');
+      r.className = "ripple";
+      const rect = btn.getBoundingClientRect();
+      r.style.left = (e.clientX - rect.left) + "px";
+      r.style.top  = (e.clientY - rect.top) + "px";
+      btn.appendChild(r);
+      setTimeout(()=> r.remove(), 600);
+
+      setActive(btn.dataset.page);
+    });
+
+    /* ===== CARD TILT ===== */
+    function addTilt(card){
+      card.addEventListener('mousemove', (e)=>{
+        const rect = card.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        const rx = (0.5 - y) * 8;
+        const ry = (x - 0.5) * 10;
+        card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
+      });
+      card.addEventListener('mouseleave', ()=>{
+        card.style.transform = `perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+      });
+    }
+
+    /* ===== VIEWERS ===== */
+    const gameViewer = document.getElementById('gameViewer');
+    const gameFrame  = document.getElementById('gameFrame');
+    const gameViewerTitle = document.getElementById('gameViewerTitle');
+
+    const siteViewer = document.getElementById('siteViewer');
+    const siteFrame  = document.getElementById('siteFrame');
+    const siteViewerTitle = document.getElementById('siteViewerTitle');
+
+    function openViewer(kind, title, src){
+      if(kind === "game"){
+        gameViewerTitle.textContent = title;
+        gameFrame.src = src;
+        gameViewer.style.display = "block";
+        gameViewer.scrollIntoView({behavior:"smooth", block:"start"});
+      }else{
+        siteViewerTitle.textContent = title;
+        siteFrame.src = src;
+        siteViewer.style.display = "block";
+        siteViewer.scrollIntoView({behavior:"smooth", block:"start"});
+      }
+    }
+
+    function closeViewer(kind){
+      if(kind === "game"){
+        gameFrame.src = "";
+        gameViewer.style.display = "none";
+      }else{
+        siteFrame.src = "";
+        siteViewer.style.display = "none";
+      }
+    }
+
+    // Wire card clicks
+    function wireCards(containerId, kind){
+      const container = document.getElementById(containerId);
+      [...container.querySelectorAll('.card')].forEach(card=>{
+        addTilt(card);
+        card.addEventListener('click', ()=>{
+          const title = card.dataset.title || "Viewer";
+          const src = card.dataset.src || "about:blank";
+          openViewer(kind, title, src);
+        });
+      });
+    }
+    wireCards("gamesGrid","game");
+    wireCards("sitesGrid","site");
+
+    // Viewer buttons
+    document.getElementById('gameClose').onclick = ()=> closeViewer("game");
+    document.getElementById('siteClose').onclick = ()=> closeViewer("site");
+
+    document.getElementById('gameReload').onclick = ()=>{
+      if(gameFrame.src) gameFrame.src = gameFrame.src;
+    };
+    document.getElementById('siteReload').onclick = ()=>{
+      if(siteFrame.src) siteFrame.src = siteFrame.src;
+    };
+
+    /* ===== STARFIELD CANVAS ===== */
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+
+    let W, H, stars;
+    function resize(){
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      const count = Math.min(220, Math.floor((W*H)/9000));
+      stars = Array.from({length: count}, ()=>({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        z: 0.2 + Math.random()*1.6,
+        r: 0.4 + Math.random()*1.7,
+        tw: Math.random()*Math.PI*2
+      }));
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+
+      // subtle space haze
+      const g = ctx.createRadialGradient(W*0.2, H*0.1, 50, W*0.2, H*0.1, Math.max(W,H));
+      g.addColorStop(0, "rgba(76,201,240,.06)");
+      g.addColorStop(0.35, "rgba(168,85,247,.05)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,W,H);
+
+      for(const s of stars){
+        s.tw += 0.02*s.z;
+        s.y += 0.10*s.z;     // drift downward
+        s.x += 0.03*s.z;     // drift sideways
+        if(s.y > H+10) s.y = -10;
+        if(s.x > W+10) s.x = -10;
+
+        const alpha = 0.25 + (Math.sin(s.tw)*0.25 + 0.25);
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    /* ===== Nebula parallax (mouse) ===== */
+    const nebula = document.getElementById('nebula');
+    window.addEventListener('mousemove', (e)=>{
+      const nx = (e.clientX / window.innerWidth) - 0.5;
+      const ny = (e.clientY / window.innerHeight) - 0.5;
+      nebula.style.transform = `translate3d(${nx*14}px, ${ny*10}px, 0)`;
+    });
+  </script>
+</body>
+</html>
