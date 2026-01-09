@@ -1,2 +1,2 @@
-# hub-zero.github.io
+# hub-zero
 Test
